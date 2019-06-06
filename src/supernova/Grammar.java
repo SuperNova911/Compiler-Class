@@ -8,9 +8,12 @@ public class Grammar
     public static final String EPSILON_STRING = "__";
     public static final String DERIVATION_STRING = "==>";
     public static final String OR_STRING = "||";
+    public static final String END_MARKER_STRING = "$";
 
     private Symbol leftSymbol;
     private ArrayList<SymbolSet> rightSymbolSetList;
+    private ArrayList<Symbol> firstSymbolList;
+    private ArrayList<Symbol> followSymbolList;
 
     public Grammar(Symbol leftSymbol)
     {
@@ -21,6 +24,9 @@ public class Grammar
     {
         this.leftSymbol = leftSymbol;
         this.rightSymbolSetList = rightSymbolList;
+
+        firstSymbolList = new ArrayList<>();
+        followSymbolList = new ArrayList<>();
     }
 
     public ArrayList<Symbol> FindFrontSymbolList()
@@ -45,9 +51,55 @@ public class Grammar
         rightSymbolSetList.remove(symbolSet);
     }
 
+    public ArrayList<SymbolSet> FindContainSymbolSet(Symbol symbol)
+    {
+        ArrayList<SymbolSet> symbolSetList = new ArrayList<>();
+
+        for (SymbolSet symbolSet : rightSymbolSetList)
+        {
+            if (symbolSet.HasSymbol(symbol))
+            {
+                symbolSetList.add(symbolSet);
+            }
+        }
+
+        return symbolSetList;
+    }
+
     public void ClearRightSymbolSet()
     {
         rightSymbolSetList.clear();
+    }
+
+    public void AddFirstSymbol(Symbol symbol)
+    {
+        if (firstSymbolList.contains(symbol) == false)
+        {
+            firstSymbolList.add(symbol);
+        }
+    }
+
+    public void ClearFirstSymbolList()
+    {
+        firstSymbolList.clear();
+    }
+
+    public void AddFollowSymbol(Symbol symbol)
+    {
+        if (symbol.GetSymbolType().equals(Symbol.SymbolType.Epsilon))
+        {
+            return;
+        }
+
+        if (followSymbolList.contains(symbol) == false)
+        {
+            followSymbolList.add(symbol);
+        }
+    }
+
+    public void ClearFollowSymbolList()
+    {
+        followSymbolList.clear();
     }
 
     @Override
@@ -82,5 +134,15 @@ public class Grammar
     public ArrayList<SymbolSet> GetRightSymbolSetList()
     {
         return rightSymbolSetList;
+    }
+
+    public ArrayList<Symbol> GetFirstSymbolList()
+    {
+        return firstSymbolList;
+    }
+
+    public ArrayList<Symbol> GetFollowSymbolList()
+    {
+        return followSymbolList;
     }
 }
