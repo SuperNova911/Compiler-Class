@@ -27,15 +27,15 @@ public class GrammarSetGenerator
 
             if (token.equals(Grammar.DERIVATION_STRING))
             {
-                if (IsTerminal(previousToken))
+                if (Symbol.FindSymbolType(previousToken) != Symbol.SymbolType.NonTerminal)
                 {
-                    System.out.println("잘못된 문법입니다.");
+                    System.out.println("잘못된 문법입니다. 유도 심볼 이전에는 터미널 심볼이 나타나야 합니다");
                     break;
                 }
 
                 if (grammar == null)
                 {
-                    grammar = new Grammar(new Symbol(previousToken, Symbol.SymbolType.NonTerminal));
+                    grammar = new Grammar(new Symbol(previousToken));
                     continue;
                 }
 
@@ -43,7 +43,7 @@ public class GrammarSetGenerator
                 symbolSet = new SymbolSet();
 
                 grammarSet.AddGrammar(grammar);
-                grammar = new Grammar(new Symbol(previousToken, Symbol.SymbolType.NonTerminal));
+                grammar = new Grammar(new Symbol(previousToken));
             }
             else if (token.equals(Grammar.OR_STRING))
             {
@@ -53,57 +53,32 @@ public class GrammarSetGenerator
                     break;
                 }
 
-                if (IsSymbol(previousToken) == false)
+                if (Symbol.IsSymbol(previousToken) == false && Symbol.FindSymbolType(previousToken) != Symbol.SymbolType.Epsilon)
                 {
                     System.out.println("잘못된 문법입니다, 문법에 추가 할 심볼이 없습니다.");
                     break;
                 }
 
-                symbolSet.AppendSymbol(new Symbol(previousToken, IsTerminal(previousToken) ? Symbol.SymbolType.Terminal : Symbol.SymbolType.NonTerminal));
+                symbolSet.AppendSymbol(new Symbol(previousToken));
                 grammar.AddRightSymbolSet(symbolSet);
                 symbolSet = new SymbolSet();
             }
-            else if (IsSymbol(previousToken))
+            else if (Symbol.IsSymbol(previousToken))
             {
-                symbolSet.AppendSymbol(new Symbol(previousToken, IsTerminal(previousToken) ? Symbol.SymbolType.Terminal : Symbol.SymbolType.NonTerminal));
+                symbolSet.AppendSymbol(new Symbol(previousToken));
             }
         }
 
         if (grammar != null)
         {
-            if (IsSymbol(token))
+            if (Symbol.IsSymbol(token))
             {
-                symbolSet.AppendSymbol(new Symbol(token, IsTerminal(token) ? Symbol.SymbolType.Terminal : Symbol.SymbolType.NonTerminal));
+                symbolSet.AppendSymbol(new Symbol(token));
             }
             grammar.AddRightSymbolSet(symbolSet);
             grammarSet.AddGrammar(grammar);
         }
 
         return grammarSet;
-    }
-
-    private static boolean IsSymbol(String token)
-    {
-        if (token == null)
-        {
-            return false;
-        }
-
-        return !token.equals(Grammar.DERIVATION_STRING) && !token.equals(Grammar.EPSILON_STRING) && !token.equals(Grammar.OR_STRING);
-    }
-
-    private static boolean IsTerminal(String token)
-    {
-        if (token == null)
-        {
-            return false;
-        }
-
-        if (IsSymbol(token) == false)
-        {
-            return false;
-        }
-
-        return !Character.isUpperCase(token.charAt(0));
     }
 }
