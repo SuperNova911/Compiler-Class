@@ -14,34 +14,24 @@ public class GrammarSet
 
     public void AddGrammar(Grammar grammar)
     {
-        if (grammar.GetLeftSymbol().IsPrime())
-        {
-            Symbol searchTarget = new Symbol(grammar.GetLeftSymbol().GetName(), grammar.GetLeftSymbol().GetSymbolType(), false);
-            searchTarget.SetPrime(false);
+        Symbol leftSymbol = grammar.GetLeftSymbol();
+        Grammar matchGrammar = leftSymbol.IsPrime() ? FindMatchGrammar(new Symbol(leftSymbol.GetName(), leftSymbol.GetSymbolType(), false)) : FindMatchGrammar(leftSymbol);
 
-            Grammar matchGrammar = FindMatchGrammar(searchTarget);
-            if (matchGrammar == null)
-            {
-                grammarList.add(grammar);
-            }
-            else
-            {
-                grammarList.add(grammarList.indexOf(matchGrammar) + 1, grammar);
-            }
+        if (matchGrammar == null)
+        {
+            grammarList.add(grammar);
+            return;
+        }
+
+        if (leftSymbol.IsPrime())
+        {
+            grammarList.add(grammarList.indexOf(matchGrammar) + 1, grammar);
         }
         else
         {
-            Grammar matchGrammar = FindMatchGrammar(grammar.GetLeftSymbol());
-            if (matchGrammar == null)
+            for (SymbolSet symbolSet : grammar.GetRightSymbolSetList())
             {
-                grammarList.add(grammar);
-            }
-            else
-            {
-                for (SymbolSet symbolSet : grammar.GetRightSymbolSetList())
-                {
-                    matchGrammar.AddRightSymbolSet(symbolSet);
-                }
+                matchGrammar.AddRightSymbolSet(symbolSet);
             }
         }
     }
@@ -50,27 +40,16 @@ public class GrammarSet
     {
         Grammar matchGrammar = FindMatchGrammar(grammar.GetLeftSymbol());
 
-        if (matchGrammar != null)
+        if (matchGrammar == null)
         {
-            matchGrammar.ClearRightSymbolSet();
-            for (SymbolSet symbolSet : grammar.GetRightSymbolSetList())
-            {
-                matchGrammar.AddRightSymbolSet(symbolSet);
-            }
-        }
-    }
-
-    public boolean HasMatchGrammar(Symbol leftSymbol)
-    {
-        for (Grammar grammar : grammarList)
-        {
-            if (grammar.GetLeftSymbol().equals(leftSymbol))
-            {
-                return true;
-            }
+            return;
         }
 
-        return false;
+        matchGrammar.ClearRightSymbolSet();
+        for (SymbolSet symbolSet : grammar.GetRightSymbolSetList())
+        {
+            matchGrammar.AddRightSymbolSet(symbolSet);
+        }
     }
 
     public Grammar FindMatchGrammar(Symbol leftSymbol)
@@ -85,9 +64,9 @@ public class GrammarSet
         // 좌 재귀가 있는 문법을 검색
         for (Grammar grammar : grammarList)
         {
-            for (SymbolSet symbolSet : grammar.GetRightSymbolSetList())
+            for (Symbol symbol : grammar.FindFrontSymbolList())
             {
-                if (grammar.GetLeftSymbol().equals(symbolSet.FindFrontSymbol()))
+                if (grammar.GetLeftSymbol().equals(symbol))
                 {
                     recursiveGrammarList.add(grammar);
                     break;
@@ -105,7 +84,7 @@ public class GrammarSet
 
             for (SymbolSet symbolSet : grammar.GetRightSymbolSetList())
             {
-                if (symbolSet.FindFrontSymbol().equals(leftSymbol))
+                if (leftSymbol.equals(symbolSet.FindFrontSymbol()))
                 {
                     symbolSet.RemoveMatchSymbol(leftSymbol);
                     symbolSet.AppendSymbol(primeSymbol);
@@ -118,7 +97,7 @@ public class GrammarSet
                 }
             }
 
-            primeGrammar.AddRightSymbolSet(new SymbolSet(new Epsilon()));
+            primeGrammar.AddRightSymbolSet(new SymbolSet());
             ReplaceGrammar(fixedGrammar);
             AddGrammar(primeGrammar);
         }
@@ -138,7 +117,7 @@ public class GrammarSet
         {
             if (grammar.GetLeftSymbol().GetName().equals(symbol.GetName()) == true)
             {
-                firstSymbolList = grammar.GetFirstSymbolList();
+                firstSymbolList = grammar.FindFrontSymbolList();
                 break;
             }
         }

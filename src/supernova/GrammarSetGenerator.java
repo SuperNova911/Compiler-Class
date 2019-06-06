@@ -12,9 +12,9 @@ public class GrammarSetGenerator
         SymbolSet symbolSet = new SymbolSet();
 
         StringTokenizer stringTokenizer = new StringTokenizer(input, Grammar.DELIM_STRING);
-        String token = null;
-        String previousToken = null;
+        String token, previousToken;
 
+        token = null;
         while (stringTokenizer.hasMoreTokens())
         {
             previousToken = token;
@@ -39,11 +39,8 @@ public class GrammarSetGenerator
                     continue;
                 }
 
-                if (symbolSet.IsSetEmpty() == false)
-                {
-                    grammar.AddRightSymbolSet(symbolSet);
-                    symbolSet = new SymbolSet();
-                }
+                grammar.AddRightSymbolSet(symbolSet);
+                symbolSet = new SymbolSet();
 
                 grammarSet.AddGrammar(grammar);
                 grammar = new Grammar(new Symbol(previousToken, Symbol.SymbolType.NonTerminal));
@@ -58,7 +55,7 @@ public class GrammarSetGenerator
 
                 if (IsSymbol(previousToken) == false)
                 {
-                    System.out.println("잘못된 문법입니다, 심볼이 없습니다.");
+                    System.out.println("잘못된 문법입니다, 문법에 추가 할 심볼이 없습니다.");
                     break;
                 }
 
@@ -66,22 +63,18 @@ public class GrammarSetGenerator
                 grammar.AddRightSymbolSet(symbolSet);
                 symbolSet = new SymbolSet();
             }
-            else
+            else if (IsSymbol(previousToken))
             {
-                if (previousToken.equals(Grammar.EPSILON_STRING))
-                {
-                    symbolSet.AppendSymbol(new Epsilon());
-                }
-                else if (IsSymbol(previousToken))
-                {
-                    symbolSet.AppendSymbol(new Symbol(previousToken, IsTerminal(previousToken) ? Symbol.SymbolType.Terminal : Symbol.SymbolType.NonTerminal));
-                }
+                symbolSet.AppendSymbol(new Symbol(previousToken, IsTerminal(previousToken) ? Symbol.SymbolType.Terminal : Symbol.SymbolType.NonTerminal));
             }
         }
 
-        if (grammar != null && IsSymbol(token))
+        if (grammar != null)
         {
-            symbolSet.AppendSymbol(new Symbol(token, IsTerminal(token) ? Symbol.SymbolType.Terminal : Symbol.SymbolType.NonTerminal));
+            if (IsSymbol(token))
+            {
+                symbolSet.AppendSymbol(new Symbol(token, IsTerminal(token) ? Symbol.SymbolType.Terminal : Symbol.SymbolType.NonTerminal));
+            }
             grammar.AddRightSymbolSet(symbolSet);
             grammarSet.AddGrammar(grammar);
         }

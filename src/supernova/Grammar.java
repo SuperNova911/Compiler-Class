@@ -14,8 +14,7 @@ public class Grammar
 
     public Grammar(Symbol leftSymbol)
     {
-        this.leftSymbol = leftSymbol;
-        rightSymbolSetList = new ArrayList<>();
+        this(leftSymbol, new ArrayList<>());
     }
 
     public Grammar(Symbol leftSymbol, ArrayList<SymbolSet> rightSymbolList)
@@ -24,28 +23,16 @@ public class Grammar
         this.rightSymbolSetList = rightSymbolList;
     }
 
-    public ArrayList<Symbol> GetFirstSymbolList()
+    public ArrayList<Symbol> FindFrontSymbolList()
     {
-        ArrayList<Symbol> firstList = new ArrayList<>();
-        Symbol firstSymbol;
+        ArrayList<Symbol> frontSymbolList = new ArrayList<>();
 
         for (SymbolSet symbolSet : rightSymbolSetList)
         {
-            if (symbolSet.IsSetEmpty())
-            {
-                continue;
-            }
-
-            firstSymbol = symbolSet.GetSymbolList().get(0);
-            if (firstSymbol.GetSymbolType() == Symbol.SymbolType.Epsilon)
-            {
-                continue;
-            }
-
-            firstList.add(firstSymbol);
+            frontSymbolList.add(symbolSet.FindFrontSymbol());
         }
 
-        return firstList;
+        return frontSymbolList;
     }
 
     public void AddRightSymbolSet(SymbolSet symbolSet)
@@ -55,10 +42,7 @@ public class Grammar
 
     public void RemoveMatchSymbolSet(SymbolSet symbolSet)
     {
-        if (rightSymbolSetList.contains(symbolSet))
-        {
-            rightSymbolSetList.remove(symbolSet);
-        }
+        rightSymbolSetList.remove(symbolSet);
     }
 
     public void ClearRightSymbolSet()
@@ -73,7 +57,11 @@ public class Grammar
 
         stringBuilder.append(String.format("%s%s ", leftSymbol.toString(), Grammar.DERIVATION_STRING));
 
-        if (rightSymbolSetList.isEmpty() == false)
+        if (rightSymbolSetList.isEmpty())
+        {
+            System.out.println("완성되지 않은 문법입니다.");
+        }
+        else
         {
             for (SymbolSet symbolSet : rightSymbolSetList)
             {
