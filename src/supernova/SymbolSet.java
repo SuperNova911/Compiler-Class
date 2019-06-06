@@ -45,8 +45,26 @@ public class SymbolSet
         return symbolList.isEmpty() ? null : symbolList.get(0);
     }
 
+    public Symbol FindBehindSymbol(Symbol symbol)
+    {
+        for (int index = 0; index < symbolList.size(); index++)
+        {
+            if (symbolList.get(index).equals(symbol) && index + 1 < symbolList.size())
+            {
+                return symbolList.get(index + 1);
+            }
+        }
+
+        return new Epsilon();
+    }
+
     public boolean HasSymbol(Symbol symbol)
     {
+        if (symbol.GetSymbolType().equals(Symbol.SymbolType.Epsilon))
+        {
+            return symbolList.isEmpty();
+        }
+
         return symbolList.contains(symbol);
     }
 
