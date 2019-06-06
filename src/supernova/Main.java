@@ -11,7 +11,7 @@ public class Main
 
     public static void main(String[] args)
     {
-        String input = ReadFile(GRAMMAR1_PATH);
+        String input = ReadFile(GRAMMAR3_PATH);
 
         System.out.println(input);
 
@@ -20,6 +20,20 @@ public class Main
 
         grammarSet.RemoveRightRecursive();
         System.out.println(String.format("Remove Right Recursive Grammar\n%s", grammarSet.toString()));
+
+        grammarSet.GenerateFirst();
+        for (Grammar grammar : grammarSet.GetGrammarList())
+        {
+            System.out.println(String.format("FIRST(%s) = %s", grammar.GetLeftSymbol(), grammar.GetFirstSymbolList()));
+        }
+        System.out.println();
+
+        grammarSet.GenerateFollow();
+        grammarSet.GenerateFollow();
+        for (Grammar grammar : grammarSet.GetGrammarList())
+        {
+            System.out.println(String.format("FOLLOW(%s) = %s", grammar.GetLeftSymbol(), grammar.GetFollowSymbolList()));
+        }
     }
 
     private static String ReadFile(String path)
