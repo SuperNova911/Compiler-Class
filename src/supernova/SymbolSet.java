@@ -20,45 +20,34 @@ public class SymbolSet
     public SymbolSet(ArrayList<Symbol> symbolList)
     {
         this();
-        this.symbolList.addAll(symbolList);
+        for (Symbol symbol : symbolList)
+        {
+            AppendSymbol(symbol);
+        }
     }
 
     public void AppendSymbol(Symbol symbol)
     {
+        if (symbol.GetSymbolType().equals(Symbol.SymbolType.Epsilon))
+        {
+            throw new IllegalArgumentException("SymbolSet 에 Epsilon 을 추가하는것은 허용되지 않습니다");
+        }
         symbolList.add(symbol);
     }
 
     public void RemoveMatchSymbol(Symbol symbol)
     {
-        if (symbolList.contains(symbol))
-        {
-            symbolList.remove(symbol);
-        }
+        symbolList.remove(symbol);
     }
 
     public Symbol FindFrontSymbol()
     {
-        if (symbolList.isEmpty())
-        {
-            return new Epsilon();
-        }
-        else
-        {
-            return symbolList.get(0);
-        }
+        return symbolList.isEmpty() ? null : symbolList.get(0);
     }
 
-    public boolean HasSymbol(Symbol targetSymbol)
+    public boolean HasSymbol(Symbol symbol)
     {
-        for (Symbol symbol : symbolList)
-        {
-            if (symbol.equals(targetSymbol))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return symbolList.contains(symbol);
     }
 
     public boolean IsSetEmpty()
@@ -71,9 +60,16 @@ public class SymbolSet
     {
         StringBuilder stringBuilder = new StringBuilder();
 
-        for (Symbol symbol : symbolList)
+        if (symbolList.isEmpty())
         {
-            stringBuilder.append(symbol.toString());
+            stringBuilder.append(new Epsilon().toString());
+        }
+        else
+        {
+            for (Symbol symbol : symbolList)
+            {
+                stringBuilder.append(symbol.toString());
+            }
         }
 
         return stringBuilder.toString();
