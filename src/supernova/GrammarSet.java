@@ -117,54 +117,175 @@ public class GrammarSet
 
     public void GenerateFollow()
     {
-        for (Grammar targetGrammar : grammarList)
+        if (grammarList.isEmpty())
         {
-            if (targetGrammar.equals(grammarList.get(0)))
-            {
-                targetGrammar.AddFollowSymbol(new EndMarker());
-            }
+            System.out.println("FOLLOW 를 생성할 문법이 없습니다");
+            return;
+        }
 
-            for (Grammar searchGrammar : grammarList)
+        grammarList.get(0).AddFollowSymbol(new EndMarker());
+
+        boolean hasUpdated = true;
+        while (hasUpdated)
+        {
+            hasUpdated = false;
+
+            for (Grammar targetGrammar : grammarList)
             {
-                for (SymbolSet containSymbolSet : searchGrammar.FindContainSymbolSet(targetGrammar.GetLeftSymbol()))
+                for (Grammar searchGrammar : grammarList)
                 {
-                    Symbol behindSymbol = containSymbolSet.FindBehindSymbol(targetGrammar.GetLeftSymbol());
-
-                    if (behindSymbol.GetSymbolType().equals(Symbol.SymbolType.NonTerminal))
+                    if (targetGrammar.equals(searchGrammar))
                     {
-                        for (Symbol symbol : FindFirst(behindSymbol))
-                        {
-                            if (symbol.GetSymbolType().equals(Symbol.SymbolType.Epsilon))
-                            {
-                                continue;
-                            }
-
-                            targetGrammar.AddFollowSymbol(symbol);
-                        }
+                        continue;
                     }
 
-                    if (IsNullable(behindSymbol))
+                    for (SymbolSet containSymbolSet : searchGrammar.FindContainSymbolSet(targetGrammar.GetLeftSymbol()))
                     {
-                        for (Symbol symbol : searchGrammar.GetFollowSymbolList())
+                        Symbol behindSymbol = containSymbolSet.FindBehindSymbol(targetGrammar.GetLeftSymbol());
+                        if (behindSymbol.GetSymbolType().equals(Symbol.SymbolType.NonTerminal))
                         {
-                            targetGrammar.AddFollowSymbol(symbol);
-                        }
-                    }
-                    else
-                    {
-                        for (Symbol symbol : FindFirst(behindSymbol))
-                        {
-                            if (symbol.GetSymbolType().equals(Symbol.SymbolType.Epsilon))
+                            Grammar behindGrammar = FindMatchGrammar(behindSymbol);
+                            if (behindGrammar == null)
                             {
-                                continue;
+                                throw new IllegalArgumentException(String.format("'%s'의 이름을 시작으로 하는 문법이 없습니다", behindSymbol.GetName()));
                             }
 
-                            targetGrammar.AddFollowSymbol(symbol);
+                            for (SymbolSet behindGrammarSymbolSet : behindGrammar.GetRightSymbolSetList())
+                            {
+                                if (behindGrammarSymbolSet.FindFrontSymbol() == null)
+                                {
+                                    for (Symbol symbol : searchGrammar.GetFollowSymbolList())
+                                    {
+                                        if (targetGrammar.GetFollowSymbolList().contains(symbol) == false)
+                                        {
+                                            hasUpdated = true;
+                                            targetGrammar.AddFollowSymbol(symbol);
+                                        }
+                                    }
+                                }
+                                else if (behindGrammarSymbolSet.FindFrontSymbol().GetSymbolType().equals(Symbol.SymbolType.NonTerminal))
+                                {
+                                    for (Symbol symbol : behindGrammar.GetFollowSymbolList())
+                                    {
+                                        if (targetGrammar.GetFollowSymbolList().contains(symbol) == false)
+                                        {
+                                            hasUpdated = true;
+                                            targetGrammar.AddFollowSymbol(symbol);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    for (Symbol symbol : FindFirst(behindSymbol))
+                                    {
+                                        if (symbol.GetSymbolType().equals(Symbol.SymbolType.Epsilon))
+                                        {
+                                            continue;
+                                        }
+
+                                        if (targetGrammar.GetFollowSymbolList().contains(symbol) == false)
+                                        {
+                                            hasUpdated = true;
+                                            targetGrammar.AddFollowSymbol(symbol);
+                                        }
+                                    }
+                                }
+                            }
+
+                            for (Symbol symbol : FindFirst(behindSymbol))
+                            {
+                                if (symbol.GetSymbolType().equals(Symbol.SymbolType.Epsilon))
+                                {
+                                    continue;
+                                }
+
+                                if (targetGrammar.GetFollowSymbolList().contains(symbol) == false)
+                                {
+                                    hasUpdated = true;
+                                    targetGrammar.AddFollowSymbol(symbol);
+                                }
+                            }
+                        }
+                        else if (IsNullable(behindSymbol))
+                        {
+                            for (Symbol symbol : searchGrammar.GetFollowSymbolList())
+                            {
+                                if (targetGrammar.GetFollowSymbolList().contains(symbol) == false)
+                                {
+                                    hasUpdated = true;
+                                    targetGrammar.AddFollowSymbol(symbol);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            for (Symbol symbol : FindFirst(behindSymbol))
+                            {
+                                if (symbol.GetSymbolType().equals(Symbol.SymbolType.Epsilon))
+                                {
+                                    continue;
+                                }
+
+                                if (targetGrammar.GetFollowSymbolList().contains(symbol) == false)
+                                {
+                                    hasUpdated = true;
+                                    targetGrammar.AddFollowSymbol(symbol);
+                                }
+                            }
                         }
                     }
                 }
             }
         }
+//
+//        for (Grammar targetGrammar : grammarList)
+//        {
+//            if (targetGrammar.equals(grammarList.get(0)))
+//            {
+//                targetGrammar.AddFollowSymbol(new EndMarker());
+//            }
+//
+//            for (Grammar searchGrammar : grammarList)
+//            {
+//                for (SymbolSet containSymbolSet : searchGrammar.FindContainSymbolSet(targetGrammar.GetLeftSymbol()))
+//                {
+//                    Symbol behindSymbol = containSymbolSet.FindBehindSymbol(targetGrammar.GetLeftSymbol());
+//
+//                    if (behindSymbol.GetSymbolType().equals(Symbol.SymbolType.NonTerminal))
+//                    {
+//                        for (Symbol symbol : FindFirst(behindSymbol))
+//                        {
+//                            if (symbol.GetSymbolType().equals(Symbol.SymbolType.Epsilon))
+//                            {
+//                                continue;
+//                            }
+//
+//                            targetGrammar.AddFollowSymbol(symbol);
+//                        }
+//                    }
+//
+//                    if (IsNullable(behindSymbol))
+//                    {
+//                        for (Symbol symbol : searchGrammar.GetFollowSymbolList())
+//                        {
+//                            targetGrammar.AddFollowSymbol(symbol);
+//                        }
+//                    }
+//                    else
+//                    {
+//                        for (Symbol symbol : FindFirst(behindSymbol))
+//                        {
+//                            if (symbol.GetSymbolType().equals(Symbol.SymbolType.Epsilon))
+//                            {
+//                                continue;
+//                            }
+//
+//                            targetGrammar.AddFollowSymbol(symbol);
+//                        }
+//                    }
+//                }
+//            }
+//        }
     }
 
     public ArrayList<Symbol> FindFirst(Symbol symbol)
@@ -214,82 +335,30 @@ public class GrammarSet
         return firstSymbolList;
     }
 
-    public ArrayList<Symbol> FindFollow(Symbol symbol)
-    {
-        Grammar matchGrammar = FindMatchGrammar(symbol);
-        if (matchGrammar == null)
-        {
-            throw new IllegalArgumentException(String.format("'%s'의 이름을 가진 문법이 없습니다", symbol.GetName()));
-        }
-
-        ArrayList<Symbol> followSymbolList = new ArrayList<>();
-        if (matchGrammar.equals(grammarList.get(0)))
-        {
-            followSymbolList.add(new EndMarker());
-        }
-
-        for (Grammar searchGrammar : grammarList)
-        {
-            for (SymbolSet containSymbolSet : searchGrammar.FindContainSymbolSet(symbol))
-            {
-                Symbol behindSymbol = containSymbolSet.FindBehindSymbol(symbol);
-                if (behindSymbol.GetSymbolType().equals(Symbol.SymbolType.NonTerminal))
-                {
-                    Grammar behindGrammar = FindMatchGrammar(behindSymbol);
-                    if (behindGrammar == null)
-                    {
-                        throw new IllegalArgumentException(String.format("'%s'의 이름을 가진 문법이 없습니다", symbol.GetName()));
-                    }
-
-                    for (SymbolSet behindGrammarSymbolSet : behindGrammar.GetRightSymbolSetList())
-                    {
-                        if (behindGrammarSymbolSet.FindFrontSymbol() == null)
-                        {
-                            if (behindGrammar.IsValidFollow())
-                            {
-                                followSymbolList.addAll(behindGrammar.GetFollowSymbolList());
-                            }
-                            else
-                            {
-                                followSymbolList.addAll(FindFollow(behindSymbol));
-                                behindGrammar.SetValidFollow(true);
-
-                            }
-                        }
-                        else
-                        {
-                            followSymbolList.addAll(FindFirst(behindSymbol));
-                        }
-                    }
-                }
-                else
-                {
-                    if (IsNullable(behindSymbol))
-                    {
-                        if (searchGrammar.IsValidFollow())
-                        {
-                            followSymbolList.addAll(searchGrammar.GetFollowSymbolList());
-                        }
-                        else
-                        {
-                            followSymbolList.addAll(FindFollow(searchGrammar.GetLeftSymbol()));
-                            searchGrammar.SetValidFollow(true);
-                        }
-                    }
-                    else
-                    {
-                        followSymbolList.addAll(FindFirst(behindSymbol));
-                    }
-                }
-            }
-        }
-
-        return followSymbolList;
-    }
-
     public boolean IsNullable(Symbol symbol)
     {
         return FindFirst(symbol).contains(new Epsilon());
+    }
+
+    public void AugmentGrammar()
+    {
+        final Symbol START_SYMBOL = new Symbol("S", true);
+
+        if (grammarList.isEmpty())
+        {
+            System.out.println("존재하는 문법이 없어 증가 문법을 만들 수 없습니다.");
+            return;
+        }
+
+        if (grammarList.get(0).GetLeftSymbol().equals(START_SYMBOL))
+        {
+            System.out.println("이미 증가 문법으로 만들어졌습니다");
+            return;
+        }
+
+        Grammar startGrammar = new Grammar(START_SYMBOL);
+        startGrammar.AddRightSymbolSet(new SymbolSet(grammarList.get(0).GetLeftSymbol()));
+        grammarList.add(0, startGrammar);
     }
 
     @Override
