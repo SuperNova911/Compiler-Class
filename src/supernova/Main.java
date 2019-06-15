@@ -11,7 +11,7 @@ public class Main
 
     public static void main(String[] args)
     {
-        String input = ReadFile(GRAMMAR3_PATH);
+        String input = ReadFile(GRAMMAR4_PATH);
 
         System.out.println(input);
 
@@ -29,11 +29,14 @@ public class Main
         System.out.println();
 
         grammarSet.GenerateFollow();
-        grammarSet.GenerateFollow();
         for (Grammar grammar : grammarSet.GetGrammarList())
         {
             System.out.println(String.format("FOLLOW(%s) = %s", grammar.GetLeftSymbol(), grammar.GetFollowSymbolList()));
         }
+        System.out.println();
+
+        grammarSet.AugmentGrammar();
+        System.out.println(String.format("Augmented Grammar\n%s", grammarSet.toString()));
     }
 
     private static String ReadFile(String path)
