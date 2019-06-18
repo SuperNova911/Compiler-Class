@@ -1,0 +1,23 @@
+Program ==> Block
+Block ==> { Decls Stmts }
+Decls ==> Decls Decl || __
+Decl ==> Type id ;
+Type ==> Type [ num ] || basic
+Stmts ==> Stmts Stmt || __
+Stmt ==> Loc = Bool ;
+    || if ( Bool ) Stmt
+    || if ( Bool ) Stmt else Stmt
+    || while ( Bool ) Stmt
+    || do Stmt while ( Bool ) ;
+    || break ;
+    || Block
+Loc ==> Loc [ Bool ] || id
+Bool ==> Bool \|\| Join || Join
+Join ==> Join && Equality || Equality
+Equality ==> Equality == Rel || Equality != Rel || Rel
+Rel ==> Expr < Expr || Expr <= Expr || Expr >= Expr
+    || Expr > Expr || Expr
+Expr ==> Expr + Term || Expr - Term || Term
+Term ==> Term * Unary || Term / Unary || Unary
+Unary ==> ! Unary || - Unary || Factor
+Factor ==> ( Bool ) || Loc || num || real || true || false
