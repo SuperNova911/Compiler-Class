@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="LR Parser:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/LR_Parser_jar</output-path>
+    <root id="archive" name="LR Parser.jar">
+      <element id="module-output" name="LR Parser" />
+    </root>
+  </artifact>
+</component>
